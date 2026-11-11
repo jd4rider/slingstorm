@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta
+      name="description"
+      content="Slingstorm — pull back the slingshot and bring the towers down in a portrait physics demolition game for Little Joy Arcade."
+    />
+    <meta name="theme-color" content="#120d1e" />
+    <meta property="og:title" content="Slingstorm" />
+    <meta property="og:description" content="Aim high. Hit hard. Bring it all down!" />
+    <meta property="og:type" content="website" />
+    <title>Slingstorm — Little Joy Arcade</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #120d1e;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        overscroll-behavior: none;
+      }
+      #game {
+        width: 100%;
+        height: 100%;
+      }
+      #game canvas {
+        display: block;
+        touch-action: none;
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="game" aria-label="Slingstorm game canvas" role="application"></main>
+    <p id="game-status" class="sr-only" aria-live="polite"></p>
+    <noscript>Slingstorm needs JavaScript enabled.</noscript>
+    <script type="module" src="/src/main.ts"></script>
+    <script src="./arcade-client.js" data-game-id="slingstorm"></script>
+  </body>
+</html>
