@@ -1,5 +1,5 @@
 import Matter from 'matter-js'
-import { GRAVITY_Y, LEDGE_TOP, LEDGES, SLING, MAX_SPEED } from '../src/game/config'
+import { GROUND, GROUND_Y, MATTER_GRAVITY_Y, SLING, MAX_SPEED } from '../src/game/config'
 import { materialDef } from '../src/game/materials'
 import { pullToVelocity, predictPath } from '../src/game/trajectory'
 import type { LevelData, Vec2 } from '../src/game/types'
@@ -17,20 +17,18 @@ export interface HeadlessSim {
 /** Mirrors the bodies GameScene creates, with the same physics properties. */
 export function createSim(level: LevelData): HeadlessSim {
   const engine = Engine.create()
-  engine.gravity.y = GRAVITY_Y
+  engine.gravity.y = MATTER_GRAVITY_Y
   engine.positionIterations = 8
   engine.velocityIterations = 6
 
-  for (const ledge of LEDGES) {
-    Composite.add(
-      engine.world,
-      Bodies.rectangle(ledge.x + ledge.w / 2, ledge.y + ledge.h / 2, ledge.w, ledge.h, {
-        isStatic: true,
-        friction: 0.95,
-        label: 'cliff',
-      }),
-    )
-  }
+  Composite.add(
+    engine.world,
+    Bodies.rectangle(GROUND.x + GROUND.w / 2, GROUND.y + GROUND.h / 2, GROUND.w, GROUND.h, {
+      isStatic: true,
+      friction: 0.95,
+      label: 'ground',
+    }),
+  )
 
   const blocks = new Map<string, Matter.Body>()
   for (const block of level.blocks) {
@@ -114,16 +112,16 @@ export function reachableCells(): Set<string> {
   const mark = (point: Vec2): void => {
     cells.add(`${Math.round(point.x / CELL)},${Math.round(point.y / CELL)}`)
   }
-  const blocked = (point: Vec2): boolean =>
-    point.y >= LEDGE_TOP &&
-    (point.x < LEDGES[0].x + LEDGES[0].w || point.x > LEDGES[1].x)
+  const blocked = (point: Vec2): boolean => point.y >= GROUND_Y
 
-  for (let degrees = -76; degrees <= 76; degrees += 2) {
+  // Aim is measured from the horizontal now: negative is a flat or slightly
+  // dropping shot, positive lobs up over the near tower.
+  for (let degrees = -12; degrees <= 80; degrees += 2) {
     const radians = (degrees * Math.PI) / 180
-    for (let power = 0.4; power <= 1.0001; power += 0.05) {
+    for (let power = 0.3; power <= 1.0001; power += 0.05) {
       const pull = {
-        x: -Math.sin(radians) * power * SLING.maxPull,
-        y: Math.cos(radians) * power * SLING.maxPull,
+        x: -Math.cos(radians) * power * SLING.maxPull,
+        y: Math.sin(radians) * power * SLING.maxPull,
       }
       const velocity = pullToVelocity(pull)
       const path = predictPath({ x: SLING.x, y: SLING.y }, velocity, 240, 2)
@@ -154,7 +152,7 @@ export function isReachable(x: number, y: number, radius = TARGET_RADIUS): boole
 /** Direct-hit flight time check for the first target, used to sanity check aim. */
 export function simulateShot(level: LevelData, degrees: number, power: number, steps = 200): { hit: boolean; path: Vec2[] } {
   const radians = (degrees * Math.PI) / 180
-  const pull = { x: -Math.sin(radians) * power * SLING.maxPull, y: Math.cos(radians) * power * SLING.maxPull }
+  const pull = { x: -Math.cos(radians) * power * SLING.maxPull, y: Math.sin(radians) * power * SLING.maxPull }
   const velocity = pullToVelocity(pull)
   const path = predictPath({ x: SLING.x, y: SLING.y }, velocity, steps, 1)
   const target = level.targets[0]

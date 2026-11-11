@@ -1,5 +1,7 @@
+import Matter from 'matter-js'
 import { describe, expect, it } from 'vitest'
 import { blastFalloff, damageFor, damageStage, impactEnergy } from '../src/game/damage'
+import { MATTER_GRAVITY_Y, SLING, SUBSTEPS, SUBSTEP_MS } from '../src/game/config'
 import { materialDef } from '../src/game/materials'
 import { projectileDef } from '../src/game/projectiles'
 import { buildLevel } from '../src/game/levels'
@@ -69,11 +71,36 @@ describe('trajectory matches the physics', () => {
     expect(Math.abs(velocity.x)).toBeLessThan(0.001)
   })
 
-  it('reaches at least 560 units above the pouch at full power', () => {
-    const velocity = pullToVelocity({ x: 0, y: 132 })
-    const path = predictPath({ x: 360, y: 992 }, velocity)
+  it('lifts a full-power shot clear of the tallest tower', () => {
+    // Air drag costs a little height, so a straight-up full pull tops out around
+    // 535 design units above the pouch - comfortably over the ~500 unit towers.
+    const velocity = pullToVelocity({ x: 0, y: SLING.maxPull })
+    const path = predictPath({ x: SLING.x, y: SLING.y }, velocity)
     const highest = Math.min(...path.map((point) => point.y))
-    expect(highest).toBeLessThan(430)
+    expect(SLING.y - highest).toBeGreaterThan(500)
+  })
+
+  it('draws the flight a real Matter body will actually fly', () => {
+    for (const degrees of [8, 24, 45, 68]) {
+      const radians = (degrees * Math.PI) / 180
+      const pull = { x: -Math.cos(radians) * SLING.maxPull, y: Math.sin(radians) * SLING.maxPull }
+      const velocity = pullToVelocity(pull)
+      const start = { x: SLING.x, y: SLING.y }
+      const guide = predictPath(start, velocity, 54, 1)
+
+      const engine = Matter.Engine.create()
+      engine.gravity.y = MATTER_GRAVITY_Y
+      const body = Matter.Bodies.circle(start.x, start.y, 25, { density: 0.0022, frictionAir: 0.002 })
+      Matter.Composite.add(engine.world, body)
+      Matter.Body.setVelocity(body, velocity)
+
+      for (let frame = 1; frame <= 54; frame += 1) {
+        for (let step = 0; step < SUBSTEPS; step += 1) Matter.Engine.update(engine, SUBSTEP_MS)
+        const dot = guide[frame]!
+        const drift = Math.hypot(dot.x - body.position.x, dot.y - body.position.y)
+        expect(drift, `${degrees}deg frame ${frame}`).toBeLessThan(2)
+      }
+    }
   })
 
   it('stops the guide line on the first block it would hit', () => {

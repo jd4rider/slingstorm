@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { buildLevel, LEVELS_PER_WORLD, TOTAL_LEVELS } from '../src/game/levels'
-import { LEDGE_TOP } from '../src/game/config'
+import { GROUND_Y } from '../src/game/config'
 import { worldDef } from '../src/data/worlds'
 import { isReachable, simulateStability, TARGET_RADIUS } from './support'
 import type { LevelData } from '../src/game/types'
@@ -45,13 +45,13 @@ describe('the 500-level journey', () => {
         expect(block.x - block.w / 2).toBeGreaterThanOrEqual(0)
         expect(block.x + block.w / 2).toBeLessThanOrEqual(720)
         expect(block.y - block.h / 2).toBeGreaterThan(80)
-        expect(block.y + block.h / 2).toBeLessThanOrEqual(LEDGE_TOP + 1)
+        expect(block.y + block.h / 2).toBeLessThanOrEqual(GROUND_Y + 1)
       }
       for (const target of level.targets) {
         expect(target.x).toBeGreaterThan(10)
         expect(target.x).toBeLessThan(710)
         expect(target.y).toBeGreaterThan(80)
-        expect(target.y).toBeLessThan(LEDGE_TOP + 1)
+        expect(target.y).toBeLessThan(GROUND_Y + 1)
       }
     }
   })

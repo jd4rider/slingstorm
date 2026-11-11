@@ -1,4 +1,4 @@
-import { LEDGE_TOP } from './config'
+import { GROUND_Y } from './config'
 import type {
   BlockSpec,
   LevelData,
@@ -78,8 +78,13 @@ function pick<T>(rng: () => number, list: readonly T[]): T {
   return list[Math.floor(rng() * list.length)]!
 }
 
+/**
+ * Tower centres. Every shot comes in from the left, so the structures stand on
+ * the right of the ridge: the near tower first, the far one behind it, with the
+ * ground in front of the slingshot kept clear for the launch.
+ */
 function baseX(side: 'left' | 'right'): number {
-  return side === 'left' ? 133 : 587
+  return side === 'left' ? 452 : 604
 }
 
 function pickSide(ctx: Ctx): 'left' | 'right' {
@@ -91,13 +96,13 @@ function pillars(t: Tower, ctx: Ctx, side: 'left' | 'right'): void {
   const bx = baseX(side)
   const h = 146 + Math.round(ctx.rng() * 8)
   const gap = 62
-  t.wall(ctx.tier, bx - gap, LEDGE_TOP, 26, h)
-  t.wall(ctx.tier, bx + gap, LEDGE_TOP, 26, h)
-  const capTop = LEDGE_TOP - h - 24
+  t.wall(ctx.tier, bx - gap, GROUND_Y, 26, h)
+  t.wall(ctx.tier, bx + gap, GROUND_Y, 26, h)
+  const capTop = GROUND_Y - h - 24
   t.slab(ctx.trim, bx, capTop, 190, 24)
   t.grumplet(bx - 42, capTop)
   if (ctx.difficulty > 0.25 && ctx.rng() < 0.7) t.grumplet(bx + 44, capTop)
-  if (ctx.rng() < 0.4) t.add('crate', bx, LEDGE_TOP - 20, 36, 36)
+  if (ctx.rng() < 0.4) t.add('crate', bx, GROUND_Y - 20, 36, 36)
 }
 
 /** A little house: walls, roof, one grumplet sheltered inside and one above. */
@@ -105,15 +110,15 @@ function hut(t: Tower, ctx: Ctx, side: 'left' | 'right'): void {
   const bx = baseX(side)
   const h = 116
   const wallMaterial = ctx.rng() < 0.35 ? ctx.trim : ctx.tier
-  t.wall(wallMaterial, bx - 54, LEDGE_TOP, 24, h)
-  t.wall(wallMaterial, bx + 54, LEDGE_TOP, 24, h)
-  t.grumplet(bx, LEDGE_TOP)
-  const capTop = LEDGE_TOP - h - 22
+  t.wall(wallMaterial, bx - 54, GROUND_Y, 24, h)
+  t.wall(wallMaterial, bx + 54, GROUND_Y, 24, h)
+  t.grumplet(bx, GROUND_Y)
+  const capTop = GROUND_Y - h - 22
   t.slab(ctx.tier, bx, capTop, 152, 22)
   t.grumplet(bx, capTop)
   if (ctx.difficulty > 0.4) {
-    t.add('glass', bx - 32, LEDGE_TOP - 34, 18, 68)
-    t.add('glass', bx + 32, LEDGE_TOP - 34, 18, 68)
+    t.add('glass', bx - 32, GROUND_Y - 34, 18, 68)
+    t.add('glass', bx + 32, GROUND_Y - 34, 18, 68)
   }
 }
 
@@ -121,10 +126,10 @@ function hut(t: Tower, ctx: Ctx, side: 'left' | 'right'): void {
 function glasscase(t: Tower, ctx: Ctx, side: 'left' | 'right'): void {
   const bx = baseX(side)
   const h = 132
-  t.wall('glass', bx - 50, LEDGE_TOP, 20, h)
-  t.wall('glass', bx + 50, LEDGE_TOP, 20, h)
-  t.grumplet(bx, LEDGE_TOP)
-  const capTop = LEDGE_TOP - h - 28
+  t.wall('glass', bx - 50, GROUND_Y, 20, h)
+  t.wall('glass', bx + 50, GROUND_Y, 20, h)
+  t.grumplet(bx, GROUND_Y)
+  const capTop = GROUND_Y - h - 28
   t.slab('stone', bx, capTop, 168, 28)
   t.grumplet(bx, capTop)
   if (ctx.world >= 2) t.add('ice', bx - 64, capTop - 10, 40, 20)
@@ -136,10 +141,10 @@ function pyramid(t: Tower, ctx: Ctx, side: 'left' | 'right'): void {
   const h = 32
   const widths = [200, 154, 108, 64]
   widths.forEach((w, row) => {
-    const top = LEDGE_TOP - (row + 1) * h
+    const top = GROUND_Y - (row + 1) * h
     t.slab(row === widths.length - 1 ? ctx.trim : ctx.tier, bx, top, w, h)
   })
-  t.grumplet(bx, LEDGE_TOP - widths.length * h)
+  t.grumplet(bx, GROUND_Y - widths.length * h)
 }
 
 /** Two narrow spires, each with its own lookout. */
@@ -148,9 +153,9 @@ function twin(t: Tower, ctx: Ctx, side: 'left' | 'right'): void {
   const h = 128
   for (const offset of [-58, 58]) {
     const cx = bx + offset
-    t.wall(ctx.tier, cx - 26, LEDGE_TOP, 22, h)
-    t.wall(ctx.tier, cx + 26, LEDGE_TOP, 22, h)
-    const top = LEDGE_TOP - h - 20
+    t.wall(ctx.tier, cx - 26, GROUND_Y, 22, h)
+    t.wall(ctx.tier, cx + 26, GROUND_Y, 22, h)
+    const top = GROUND_Y - h - 20
     t.slab(ctx.trim, cx, top, 96, 20)
     t.grumplet(cx, top)
   }
@@ -160,24 +165,24 @@ function twin(t: Tower, ctx: Ctx, side: 'left' | 'right'): void {
 function bridge(t: Tower, ctx: Ctx, side: 'left' | 'right'): void {
   void side
   const riserH = 58
-  t.wall(ctx.trim, 232, LEDGE_TOP, 32, riserH)
-  t.wall(ctx.trim, 488, LEDGE_TOP, 32, riserH)
-  const beamTop = LEDGE_TOP - riserH - 18
-  t.slab(ctx.tier, 360, beamTop, 272, 18)
-  t.grumplet(312, beamTop)
-  t.grumplet(408, beamTop)
+  t.wall(ctx.trim, 440, GROUND_Y, 32, riserH)
+  t.wall(ctx.trim, 640, GROUND_Y, 32, riserH)
+  const beamTop = GROUND_Y - riserH - 18
+  t.slab(ctx.tier, 540, beamTop, 240, 18)
+  t.grumplet(496, beamTop)
+  t.grumplet(584, beamTop)
   if (ctx.difficulty > 0.45) {
-    t.add('crate', 360, beamTop - 20, 34, 34)
-    t.grumplet(196, LEDGE_TOP)
+    t.add('crate', 540, beamTop - 20, 34, 34)
+    t.grumplet(676, GROUND_Y)
   }
-  if (ctx.difficulty > 0.7) t.add('stone', 360, beamTop - 50, 90, 26)
+  if (ctx.difficulty > 0.7) t.add('stone', 540, beamTop - 50, 90, 26)
 }
 
 /** A reinforced hall: stone base, timber floor, metal lid. */
 function fortress(t: Tower, ctx: Ctx, side: 'left' | 'right'): void {
   const bx = baseX(side)
-  for (const offset of [-84, 0, 84]) t.wall('stone', bx + offset, LEDGE_TOP, 52, 58)
-  const floorTop = LEDGE_TOP - 58 - 20
+  for (const offset of [-84, 0, 84]) t.wall('stone', bx + offset, GROUND_Y, 52, 58)
+  const floorTop = GROUND_Y - 58 - 20
   t.slab('wood', bx, floorTop, 220, 20)
   t.grumplet(bx, floorTop)
   t.wall(ctx.tier, bx - 76, floorTop, 24, 92)
@@ -197,20 +202,20 @@ function stack(t: Tower, ctx: Ctx, side: 'left' | 'right'): void {
   for (let row = 0; row < rows; row += 1) {
     const material = row % 2 === 0 ? ctx.tier : ctx.trim
     const w = 112 - (row % 3) * 12
-    t.slab(material, bx, LEDGE_TOP - (row + 1) * h, w, h)
+    t.slab(material, bx, GROUND_Y - (row + 1) * h, w, h)
   }
-  t.grumplet(bx, LEDGE_TOP - rows * h)
+  t.grumplet(bx, GROUND_Y - rows * h)
 }
 
 /** Ice columns with a stone roof: a single shot can shear the whole thing. */
 function icebox(t: Tower, ctx: Ctx, side: 'left' | 'right'): void {
   const bx = baseX(side)
   const h = 118
-  t.wall('ice', bx - 54, LEDGE_TOP, 22, h)
-  t.wall('ice', bx + 54, LEDGE_TOP, 22, h)
-  t.grumplet(bx - 26, LEDGE_TOP)
-  t.grumplet(bx + 26, LEDGE_TOP)
-  const capTop = LEDGE_TOP - h - 26
+  t.wall('ice', bx - 54, GROUND_Y, 22, h)
+  t.wall('ice', bx + 54, GROUND_Y, 22, h)
+  t.grumplet(bx - 26, GROUND_Y)
+  t.grumplet(bx + 26, GROUND_Y)
+  const capTop = GROUND_Y - h - 26
   t.slab('stone', bx, capTop, 176, 26)
   t.grumplet(bx, capTop)
   t.add('ice', bx + 64, capTop - 10, 40, 20)
@@ -219,11 +224,11 @@ function icebox(t: Tower, ctx: Ctx, side: 'left' | 'right'): void {
 /** Metal shield over glass legs: you have to go around or through. */
 function vault(t: Tower, ctx: Ctx, side: 'left' | 'right'): void {
   const bx = baseX(side)
-  t.wall('glass', bx - 62, LEDGE_TOP, 20, 104)
-  t.wall('glass', bx + 62, LEDGE_TOP, 20, 104)
-  t.grumplet(bx - 30, LEDGE_TOP)
-  t.grumplet(bx + 30, LEDGE_TOP)
-  const shellTop = LEDGE_TOP - 104 - 34
+  t.wall('glass', bx - 62, GROUND_Y, 20, 104)
+  t.wall('glass', bx + 62, GROUND_Y, 20, 104)
+  t.grumplet(bx - 30, GROUND_Y)
+  t.grumplet(bx + 30, GROUND_Y)
+  const shellTop = GROUND_Y - 104 - 34
   t.slab('metal', bx, shellTop, 190, 34)
   t.grumplet(bx, shellTop)
   if (ctx.difficulty > 0.5) t.add('crystal', bx + 58, shellTop - 15, 34, 30)
@@ -290,19 +295,6 @@ function buildTower(archetype: Archetype | 'bridge', ctx: Ctx): Tower {
       vault(tower, ctx, side)
       break
   }
-  // Later worlds sometimes add a second, smaller outpost on the far cliff.
-  if (ctx.world >= 6 && ctx.difficulty > 0.5 && ctx.rng() < 0.45) {
-    const far = side === 'left' ? 'right' : 'left'
-    const small = new Tower()
-    const fx = baseX(far)
-    small.wall(ctx.tier, fx - 34, LEDGE_TOP, 22, 92)
-    small.wall(ctx.tier, fx + 34, LEDGE_TOP, 22, 92)
-    const top = LEDGE_TOP - 92 - 20
-    small.slab(ctx.trim, fx, top, 100, 20)
-    small.grumplet(fx, top)
-    tower.blocks.push(...small.blocks.map((block, i) => ({ ...block, id: `b9${i}` })))
-    tower.targets.push(...small.targets.map((target, i) => ({ ...target, id: `t9${i}` })))
-  }
   return tower
 }
 
@@ -333,73 +325,6 @@ function compress(queue: ProjectileId[]): ShotSpec[] {
   return shots
 }
 
-/**
- * A target standing on the cliff top is a trick shot: the lip is only ~110
- * design units right of the pouch, so a shot that clears it is still climbing
- * when it passes the wall and sails straight over anything at ledge height.
- * Lift every structure until its lowest target sits above the lip's shadow and
- * fill the gap with a plinth, so the same lob that clears the lip drops onto
- * the tower.
- */
-const MIN_TARGET_LIFT = 130
-/** Ground patch a grumplet needs under it, wider than its own radius. */
-const FOOT_HALF = 22
-/** Foundations closer than this share one base. */
-const SPAN_MERGE = 24
-
-function liftTower(tower: Tower, material: MaterialId): void {
-  if (tower.targets.length === 0) return
-  const lowest = Math.min(...tower.targets.map((target) => LEDGE_TOP - target.y))
-  const lift = MIN_TARGET_LIFT - lowest
-  if (lift <= 1) return
-  const stands = tower.blocks.filter(
-    (block) => Math.abs(block.y + block.h / 2 - LEDGE_TOP) < 2 && Math.abs(block.angle ?? 0) < 0.0001,
-  )
-  // The tower's base becomes a row of foundations: legs that nearly touch share
-  // one base, and a grumplet that was standing on the cliff (inside a hut or a
-  // cellar, for example) widens the nearest base so it still has something
-  // under it once the tower rises. A base only counts as support when the whole
-  // ground patch fits on it, so nothing ends up balanced on an edge.
-  const spans: { a: number; b: number }[] = []
-  const addSpan = (a: number, b: number): void => {
-    let na = Math.min(a, b)
-    let nb = Math.max(a, b)
-    let joined = true
-    while (joined) {
-      joined = false
-      for (let i = 0; i < spans.length; i += 1) {
-        const span = spans[i]!
-        if (nb < span.a - SPAN_MERGE || na > span.b + SPAN_MERGE) continue
-        na = Math.min(na, span.a)
-        nb = Math.max(nb, span.b)
-        spans.splice(i, 1)
-        joined = true
-        break
-      }
-    }
-    spans.push({ a: na, b: nb })
-  }
-  for (const stand of stands) addSpan(stand.x - stand.w / 2, stand.x + stand.w / 2)
-  const grounded = tower.targets.filter((target) => target.y > LEDGE_TOP - 30)
-  for (const target of grounded) {
-    const a = target.x - FOOT_HALF
-    const b = target.x + FOOT_HALF
-    if (spans.some((span) => span.a <= a && span.b >= b)) continue
-    addSpan(a, b)
-  }
-  const plinths: BlockSpec[] = spans.map((span, index) => ({
-    id: `foundation-${index + 1}`,
-    x: (span.a + span.b) / 2,
-    y: LEDGE_TOP - lift / 2,
-    w: span.b - span.a,
-    h: lift,
-    angle: 0,
-    material,
-  }))
-  for (const block of tower.blocks) block.y -= lift
-  for (const target of tower.targets) target.y -= lift
-  tower.blocks.push(...plinths)
-}
 
 export function buildLevel(id: number): LevelData {
   const clamped = Math.max(1, Math.min(TOTAL_LEVELS, Math.round(id)))
@@ -417,8 +342,7 @@ export function buildLevel(id: number): LevelData {
 
   const archetype = chooseArchetype(ctx, index)
   const tower = buildTower(archetype, ctx)
-  if (tower.targets.length === 0) tower.grumplet(baseX('left'), LEDGE_TOP)
-  liftTower(tower, ctx.tier)
+  if (tower.targets.length === 0) tower.grumplet(baseX('left'), GROUND_Y)
 
   const objective = objectiveFor(tower.targets, tower.blocks, ctx)
   const baseGoal = objective.kind === 'targets' || objective.kind === 'defeat' ? objective.count : tower.targets.length

@@ -2,7 +2,7 @@ import Phaser from 'phaser'
 import { sound } from '../core/audio'
 import { save, syncAchievements } from '../core/saves'
 import { buildArena, buildLevel, levelObjectiveText } from '../game/levels'
-import { SLING, SUBSTEPS, SUBSTEP_MS } from '../game/config'
+import { GROUND, GROUND_Y, SLING, SUBSTEPS, SUBSTEP_MS } from '../game/config'
 import { damageFor, impactEnergy } from '../game/damage'
 import { materialDef } from '../game/materials'
 import { objectiveComplete, objectiveValue, starsFor } from '../game/progress'
@@ -112,7 +112,8 @@ export class GameScene extends Phaser.Scene {
   private phase: 'aim' | 'flight' | 'settle' | 'done' | 'paused' = 'aim'
   private aiming = false
   private aimPull: Vec2 = { x: 0, y: 0 }
-  private keyAngle = 0
+  /** Keyboard aim in degrees above the horizontal: 0 is a flat shot right. */
+  private keyAngle = 24
   private keyPower = 0.7
   private lastSoundPull = 0
 
@@ -180,6 +181,14 @@ export class GameScene extends Phaser.Scene {
     this.scale.on(Phaser.Scale.Events.RESIZE, this.fitCamera, this)
     this.matter.world.autoUpdate = false
     this.matter.world.setBounds(-2000, -3000, 4720, 6000, 64, true, true, false, false)
+    // The ridge never moves, so it is one body for the whole scene.
+    this.matter.add.rectangle(GROUND.x + GROUND.w / 2, GROUND.y + GROUND.h / 2, GROUND.w, GROUND.h, {
+      isStatic: true,
+      friction: 0.95,
+      frictionStatic: 1,
+      restitution: 0,
+      label: 'ground',
+    })
 
     this.bands = this.add.graphics().setDepth(14)
     this.preview = this.add.graphics().setDepth(13)
@@ -218,7 +227,7 @@ export class GameScene extends Phaser.Scene {
     this.world = worldDef(this.level.world)
     this.backdrop = new Backdrop(this, this.world, { motes: true, dim: 0.06 })
     this.backdrop.container.setDepth(0)
-    this.drawCliffs()
+    this.drawGround()
     this.drawSling()
     this.queue = this.expandShots(this.level)
     this.ammoTotal = this.queue.length
@@ -299,83 +308,50 @@ export class GameScene extends Phaser.Scene {
     this.loadedShadow = undefined
   }
 
-  private drawCliffs(): void {
+  private drawGround(): void {
     const graphics = this.cliffArt
     graphics.clear()
     const near = hex(this.world.near)
     const far = hex(this.world.far)
-    for (const side of [-1, 1]) {
-      const x0 = side < 0 ? 0 : 470
-      const width = 250
-      graphics.fillStyle(far, 1)
+    // One long ridge: a lit lip over a deep band of striated rock, so the
+    // slingshot and every tower are visibly standing on the same ground.
+    graphics.fillStyle(far, 1)
+    graphics.fillRect(0, GROUND_Y, DESIGN_W, DESIGN_H - GROUND_Y)
+    graphics.lineStyle(2, 0x000000, 0.12)
+    for (let row = 0; row < 5; row += 1) {
+      const y = GROUND_Y + 58 + row * 74
       graphics.beginPath()
-      graphics.moveTo(x0, 760)
-      for (let step = 0; step <= 8; step += 1) {
-        const x = x0 + (width / 8) * step
-        const y = 770 + Math.sin(step * 1.9 + (side + 2)) * 9
-        graphics.lineTo(x, y)
-      }
-      graphics.lineTo(x0 + width, 1280)
-      graphics.lineTo(x0, 1280)
-      graphics.closePath()
-      graphics.fillPath()
-      graphics.fillStyle(near, 1)
-      graphics.fillRoundedRect(x0 - 4, 742, width + 8, 44, 14)
-      graphics.fillStyle(0xffffff, 0.12)
-      graphics.fillRoundedRect(x0, 742, width, 12, 8)
-      // Stone striations so the cliffs read as rock, not flat blocks.
-      graphics.lineStyle(2, 0x000000, 0.12)
-      for (let row = 0; row < 5; row += 1) {
-        const y = 812 + row * 82
-        graphics.beginPath()
-        graphics.moveTo(x0 + 8, y)
-        graphics.lineTo(x0 + width - 16, y + 16)
-        graphics.strokePath()
-      }
+      graphics.moveTo(0, y)
+      graphics.lineTo(DESIGN_W, y + 18)
+      graphics.strokePath()
     }
-    // The slingshot stands on a flat rock in the middle of the canyon.
-    graphics.fillStyle(near, 1)
-    graphics.fillEllipse(SLING.x, 1104, 260, 70)
     graphics.fillStyle(0x000000, 0.18)
-    graphics.fillEllipse(SLING.x, 1116, 230, 40)
-    // Cliff bodies are rebuilt in spawnBlocks() so a restart never stacks them.
+    graphics.fillRect(0, GROUND_Y, DESIGN_W, 16)
+    graphics.fillStyle(near, 1)
+    graphics.fillRoundedRect(-8, GROUND_Y - 8, DESIGN_W + 16, 34, 12)
+    graphics.fillStyle(0xffffff, 0.14)
+    graphics.fillRoundedRect(-8, GROUND_Y - 8, DESIGN_W + 16, 10, 6)
   }
 
   private drawSling(): void {
     this.slingArt?.destroy()
     if (this.textures.exists('slingshot')) {
-      this.slingArt = this.add.image(SLING.x, 1012, 'slingshot').setDepth(8).setScale(0.86)
+      this.slingArt = this.add.image(SLING.x, GROUND_Y - 92, 'slingshot').setDepth(8).setScale(0.86)
       this.slingArt.setAlpha(0.98)
     } else {
       const graphics = this.add.graphics().setDepth(8)
       graphics.fillStyle(0x8d5427, 1)
-      graphics.fillRoundedRect(SLING.x - 18, 930, 36, 160, 14)
+      graphics.fillRoundedRect(SLING.x - 18, GROUND_Y - 214, 36, 214, 14)
       graphics.fillStyle(0xc98a4e, 1)
-      graphics.fillRoundedRect(SLING.x - 10, 930, 12, 160, 8)
+      graphics.fillRoundedRect(SLING.x - 10, GROUND_Y - 214, 12, 214, 8)
       graphics.lineStyle(22, 0x8d5427, 1)
-      graphics.lineBetween(SLING.x - 10, 980, SLING.leftTip.x, SLING.leftTip.y)
-      graphics.lineBetween(SLING.x + 10, 980, SLING.rightTip.x, SLING.rightTip.y)
+      graphics.lineBetween(SLING.x - 6, GROUND_Y - 178, SLING.leftTip.x, SLING.leftTip.y)
+      graphics.lineBetween(SLING.x + 6, GROUND_Y - 178, SLING.rightTip.x, SLING.rightTip.y)
       this.slingArt = graphics
     }
   }
 
   private spawnBlocks(): void {
-    // Cliffs are static bodies, created once per stage.
-    for (const ledge of [
-      { x: 125, y: 1020, w: 250, h: 520 },
-      { x: 595, y: 1020, w: 250, h: 520 },
-    ]) {
-      this.matter.add.rectangle(ledge.x, ledge.y, ledge.w, ledge.h, {
-        isStatic: true,
-        friction: 0.95,
-        frictionStatic: 1,
-        restitution: 0,
-        label: 'cliff',
-      })
-    }
-    // A floor far below catches nothing but keeps bodies from falling forever.
-    this.matter.add.rectangle(360, 1400, 900, 80, { isStatic: true, label: 'abyss' })
-
     for (const spec of this.level.blocks) {
       const def = materialDef(spec.material)
       const body = this.matter.add.rectangle(spec.x, spec.y, spec.w, spec.h, {
@@ -631,12 +607,12 @@ export class GameScene extends Phaser.Scene {
       case 'ArrowLeft':
       case 'a':
       case 'A':
-        this.keyAngle = Math.max(-72, this.keyAngle - step)
+        this.keyAngle = Math.max(-12, this.keyAngle - step)
         break
       case 'ArrowRight':
       case 'd':
       case 'D':
-        this.keyAngle = Math.min(72, this.keyAngle + step)
+        this.keyAngle = Math.min(78, this.keyAngle + step)
         break
       case 'ArrowUp':
       case 'w':
@@ -664,7 +640,8 @@ export class GameScene extends Phaser.Scene {
   private aimFromKeyboard(): void {
     const radians = (this.keyAngle * Math.PI) / 180
     const length = this.keyPower * SLING.maxPull
-    this.aimPull = { x: -Math.sin(radians) * length, y: Math.cos(radians) * length }
+    // The pull points back along the shot line, so the shot leaves to the right.
+    this.aimPull = { x: -Math.cos(radians) * length, y: Math.sin(radians) * length }
     this.positionLoaded()
     this.drawAim()
   }
@@ -719,8 +696,7 @@ export class GameScene extends Phaser.Scene {
           w: block.spec.w,
           h: block.spec.h,
         })),
-        { x: 125, y: 1020, w: 250, h: 520 },
-        { x: 595, y: 1020, w: 250, h: 520 },
+        { x: GROUND.x + GROUND.w / 2, y: GROUND.y + GROUND.h / 2, w: GROUND.w, h: GROUND.h },
       ],
       20,
     )

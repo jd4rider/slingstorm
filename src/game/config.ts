@@ -1,44 +1,43 @@
 /**
- * One source of truth for the vertical playfield. The physics world, the
- * trajectory preview and the artwork every read these numbers, so what the
- * dotted line promises is what the projectile actually does.
+ * One source of truth for the playfield. The physics world, the trajectory
+ * preview and the artwork each read these numbers, so what the dotted line
+ * promises is what the projectile actually does.
+ *
+ * The board is a side view: the slingshot stands on the left of a long ridge,
+ * the towers stand on the right, and every shot travels left to right.
  */
 
 export const DESIGN_W = 720
 export const DESIGN_H = 1280
 
-/** The two cliff tops the towers are built on. */
-export const LEDGE_TOP = 760
-export const LEDGES = [
-  { x: 0, y: LEDGE_TOP, w: 250, h: 520 },
-  { x: 470, y: LEDGE_TOP, w: 250, h: 520 },
-] as const
+/** Top surface of the ridge the slingshot and every tower stand on. */
+export const GROUND_Y = 880
 
-/** Height of the open channel a shot has to thread, in design units. */
-export const CORRIDOR = { x0: 250, x1: 470 }
+/** The ridge itself: one static body, drawn by GameScene. */
+export const GROUND = { x: -360, y: GROUND_Y, w: 1440, h: 520 } as const
 
 export const SLING = {
-  x: 360,
+  x: 168,
   /** The pouch sits here with a projectile loaded. */
-  y: 992,
+  y: GROUND_Y - 112,
   /** Fork tips, used for the elastic bands. */
-  leftTip: { x: 316, y: 902 },
-  rightTip: { x: 404, y: 902 },
-  /** Furthest the pouch can be pulled back. */
-  maxPull: 132,
+  leftTip: { x: 124, y: GROUND_Y - 202 },
+  rightTip: { x: 212, y: GROUND_Y - 202 },
+  /** Furthest the pouch can be pulled back, down the ridge to the left. */
+  maxPull: 128,
 } as const
 
 /**
- * Matter gravity at 60 Hz. Substeps halve the per-step travel, not the pull.
- * The launch speed and this value together set the range: v^2 / g is roughly
- * how far a full-power 45 degree shot carries. At 20 px per step against 0.45
- * gravity that is a little over 800 design units, so a full pull clears the
- * canyon lip and still lands on a cliff-top tower instead of shooting flat
- * past it.
+ * Matter gravity. Matter multiplies `gravity.y` by `gravity.scale` (0.001) and
+ * by the squared step in milliseconds, so a body gains
+ * `gravity.y * 0.001 * (1000 / 60)^2` pixels of velocity per 60 Hz frame.
+ * 1.8 therefore falls at 0.5 px per frame squared, which is the rate the aim
+ * guide integrates. Matter's default of 1 falls at little more than half that,
+ * which is why every shot used to sail high over the drawn line.
  */
-export const GRAVITY_Y = 0.5
+export const MATTER_GRAVITY_Y = 1.8
 
-/** Launch speed in design pixels per 60 Hz step at full pull. */
+/** Launch speed in design pixels per 60 Hz frame at full pull. */
 export const MAX_SPEED = 24
 
 /** Physics is stepped twice per rendered frame so fast shots cannot tunnel. */

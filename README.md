@@ -1,8 +1,8 @@
 # Slingstorm
 
-A portrait-first slingshot demolition game for Little Joy Arcade. Pull a
-Slingling back in the pouch at the bottom of the screen, fire up through the
-canyon, and bring the towers down.
+A portrait slingshot demolition game for Little Joy Arcade. The slingshot
+stands on the left of a long ridge, the towers stand on the right, and every
+shot travels left to right: pull a Slingling back down the ridge and let it go.
 
 Phaser 3 · TypeScript · Vite · Matter physics.
 
@@ -30,12 +30,12 @@ npm run build      # tsc --noEmit && vite build
 
 `tests/levels.test.ts` builds all 500 levels and checks, for every one:
 
-1. Every block and target is inside the playfield and above the cliff line.
+1. Every block and target is inside the playfield and above the ridge line.
 2. No piece starts overlapping another, which is what makes a tower explode on
    load.
 3. Ammunition covers the objective and the star thresholds are ordered.
 4. Every target sits on a point a real ballistic arc from the pouch can reach
-   (the cliff faces block shots, ordinary blocks do not).
+   (the ridge blocks shots, ordinary blocks do not).
 5. The tower stands for 1.2 seconds with no shot: no block drifts more than
    12px, no target more than 40px, nothing falls out of the world.
 
@@ -43,7 +43,9 @@ That is a stability and reachability proof, not a solver: it does not claim a
 specific sequence of shots clears every level, because Matter is not
 deterministic across browsers. `tests/damage.test.ts` pins the material ratios
 (glass and ice break in one clean hit, wood takes real work, stone takes more,
-metal barely scratches) and checks the preview maths against the launch maths.
+metal barely scratches), flies a real Matter body at four angles and checks the
+drawn guide never drifts more than two pixels from it, and checks the preview
+maths against the launch maths.
 
 ## Regenerating the artwork
 

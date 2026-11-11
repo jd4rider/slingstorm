@@ -2,10 +2,10 @@
   "id": "slingstorm",
   "name": "Slingstorm",
   "tagline": "Aim high. Hit hard. Bring it all down!",
-  "description": "A portrait-first slingshot demolition game. Pull a Slingling back in the pouch at the bottom of the screen and fire upward into towers built on the cliff tops either side of the canyon. Towers are real Matter rigid bodies: knock out a support and the whole thing comes down. Eight materials behave differently (glass shatters, ice is brittle, stone takes work, metal shrugs shots off, boom crates chain), ten Slinglings each have a tap-in-flight ability, and every one of the 500 Journey levels is generated deterministically and validated - the tower must stand for two seconds with no shot, and every target must be reachable by a real ballistic arc from the pouch.",
+  "description": "A portrait-first slingshot demolition game. Pull a Slingling back down the ridge to the left and fire it right into towers built on that same ridge. Towers are real Matter rigid bodies: knock out a support and the whole thing comes down. Eight materials behave differently (glass shatters, ice is brittle, stone takes work, metal shrugs shots off, boom crates chain), ten Slinglings each have a tap-in-flight ability, and every one of the 500 Journey levels is generated deterministically and validated - the tower must stand for two seconds with no shot, and every target must be reachable by a real ballistic arc from the pouch.",
   "categories": ["Arcade", "Puzzle", "Physics"],
   "runtime": "Phaser 3",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "updated": "2026-11-11",
   "status": "live",
   "featured": false,
@@ -16,7 +16,7 @@
   "downloads": [],
   "cover": { "from": "#5a3f9e", "to": "#ff9c5a", "emoji": "\uD83E\uDE83" },
   "highlights": [
-    "Vertical slingshot demolition built for portrait: pull down in the pouch, fire up through the canyon gap",
+    "Side-on slingshot demolition built for portrait: pull back to the left, fire right along the ridge",
     "Blender-rendered Slinglings and Grumplets with real strand fur, glossy eyes, per-type silhouettes and five baked animations each",
     "Real Matter physics towers - break a support and the structure collapses; nothing is scripted to fall",
     "Eight materials with distinct feel: wood splinters, glass and ice shatter, stone takes repeated hits, metal resists, boom crates chain",
@@ -30,10 +30,10 @@
     "Synthesised audio and painted block textures: no downloads, and the game works offline"
   ],
   "howToPlay": [
-    "Touch or click the loaded Slingling, drag back and down to stretch the slingshot, and release to fire. Pull further for more power; the dotted line shows the arc.",
+    "Touch or click the loaded Slingling, drag back to the left to stretch the slingshot, then release to fire to the right. Pull further for more power; the dotted line is the exact arc the shot will fly.",
     "Tap anywhere while a Slingling is in the air to use its ability. Boomkin detonates, Triplet splits, Frostpop freezes, Zing arcs lightning and Wrecker crushes.",
     "Towers are physical. Thin supports and glass legs are usually worth more than the wall in front of them.",
-    "Knock every Grumplet out of the tower. Anything that falls into the canyon counts as beaten.",
+    "Knock every Grumplet out of the tower. Anything knocked off the ridge counts as beaten.",
     "You only get the shots listed at the bottom of the screen, and any you do not need are worth 2,500 points each when the tower goes down.",
     "Keyboard: A/D or arrows to aim, W/S to change power, Enter to fire, Space for the ability, P or Escape to pause, R to retry."
   ],

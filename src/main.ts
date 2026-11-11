@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import './style.css'
+import { MATTER_GRAVITY_Y } from './game/config'
 import { sound } from './core/audio'
 import { BootScene } from './phaser/BootScene'
 import { CollectionScene } from './phaser/CollectionScene'
@@ -37,7 +38,7 @@ const config: Phaser.Types.Core.GameConfig = {
   physics: {
     default: 'matter',
     matter: {
-      gravity: { x: 0, y: 0.6 },
+      gravity: { x: 0, y: MATTER_GRAVITY_Y },
       enableSleeping: true,
       positionIterations: 8,
       velocityIterations: 6,
